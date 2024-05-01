@@ -16,6 +16,8 @@ service GameService {
 
   // All game context updates arrive through here.
   rpc PollGame(PollGameRequest) returns (stream GameContext);
+
+  rpc GameList(GameListRequest) returns (stream GameContext);
 }
 
 message MatchRequest {
@@ -111,4 +113,9 @@ message OpponentPreference {
   BotPreference bot_preference = 1;
   // Can expand with things like:
   // repeated string player_id_exclude = 2;
+}
+
+message GameListRequest {
+  string player_id = 1;
+  repeated GameState game_state_filter = 2; // empty means "return everything"
 }
