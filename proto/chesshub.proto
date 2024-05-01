@@ -17,7 +17,7 @@ message OpponentPreference {
   // repeated string player_id_exclude = 2;
 }
 
-message RequestGameRequest {
+message MatchRequest {
   string player_id = 1;
   ColorPreference color_preference = 2;
   OpponentPreference opponent_preference = 3;
@@ -27,7 +27,7 @@ message RequestGameRequest {
   // .....
 }
 
-message RequestGameResponse {
+message MatchResponse {
   string game_id = 1;
 }
 
@@ -74,7 +74,7 @@ message GameContext {
 service GameService {
   // Creates a game and starts matching process on the server.
   // () -> (WAITING_FOR_OPPONENT/READY_TO_START)
-  rpc RequestGame(RequestGameRequest) returns (RequestGameResponse);
+  rpc Match(MatchRequest) returns (MatchResponse);
 
   // READY_TO_START -> WHITE_MOVE
   rpc StartGame(StartGameRequest) returns (google.protobuf.Empty);
