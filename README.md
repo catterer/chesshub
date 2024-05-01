@@ -56,4 +56,9 @@ This *should* work, but I would try to set it up first before implementing every
 
 ![nb](chesshub_nobot.png)
 
+## Server architecture (adding bots)
+
+Each bot is registered under a separate PlayerID. Bots are expected to be the most CPU-consuming processes in the whole system, so every bot should be horizontally scalable. This is achieved in the following way:
+
+A bot runs as a self-aware K8s ReplicaSet. Every bot pod is responsible for a subset of games held by the bot (for instance, shared by hash of GameID). When bot pod is launched, it calls GameList RPC to get all the games belonging to the bot, and starts watching K8s server for rescaling events on its own ReplicaSet. This allows bot pod to only process the games belonging to it. There is a race during rescaling which leads to one game being temporarily "played" by more than one bot, but this should be handled correctly by ChessEngine.
 
