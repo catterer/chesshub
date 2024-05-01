@@ -12,7 +12,7 @@ To limit the scope of this design, I introduced certain limitations:
 
 **Player** is an actor uniquely identified by PlayerID (string) who requests games and makes moves. Players can be humans or bots.
 
-**Game** is a full game context uniquely identified by GameID (UUID). It is created once the Player requests a new game (that is, even before the Matching happens). Game context includes player or players participating in the game, the current state of the game (started, 
+**Game** is a full game context uniquely identified by GameID (UUID). It is created once the Player requests a new game (that is, even before the Matching happens). The game context includes the player or players participating in the game, the current state of the game (like PLAYING and FINISHED), and the state of the board.
 
 **Matching** means connecting two Players in the same Game.
 
