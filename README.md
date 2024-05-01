@@ -22,4 +22,4 @@ All gRPC definitions should be available [here](proto/chesshub.proto).
 
 ## Player perspective
 
-Here, I describe how a game is played from a Player's perspective. Note that Player can have any number of games concurrently.
+Here, I describe progression of one game from a Player's perspective. Note that Player can have any number of games concurrently.
