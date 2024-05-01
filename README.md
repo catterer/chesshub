@@ -36,6 +36,7 @@ Here all the incoming RPCs end up. ChessEngine has the following logic:
 - **StartGame RPC** or **CancelGame RPC**: find the game context in Storage and set (CAS) ready_to_start flag of the sender; if both players are ready, promote (CAS) the game to WHITE_MOVE state. For CancelGame, promote to FINISH.
 - **MakeMove RPC** or **Surrender RPC**: find the game context in Storage, apply the new move to the current board state. If there is a mate or Surrender RPC, promote to FINISH and set the winner. Update (CAS) game context accordingly. 
 - **PollGame RPC**: use [Change Streams](https://www.mongodb.com/docs/manual/changeStreams/) to listen for any updates in the specified game. When they happen, return stream the new GameContext to the sender.
+- **GameList RPC**: find all games for given player_id and stream them back to sender; (can be a lot of games, esp for bots, so should be streaming).
 
 #### Monitoring
 Since ChessEngine has all the logic related to the game, it is the best point to monitor the system. A node-level logging agent like Fluentd can be used to aggregate logs from ChessEngine pods and can also be integrated with Prometheus for metrics.
