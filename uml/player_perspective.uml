@@ -1,0 +1,24 @@
+@startuml
+actor Player
+participant Server
+
+Player -> Server: Match()
+note over Server: create game ABC123
+Server -> Player: MatchResponse(game_id=ABC123)
+Player --\ Server: PollGameRequest(game_id=ABC123, color_preference=white)
+Server --/ Player: GameContext(WAITING_FOR_OPPONENT)
+note over Server: no match, waiting...
+note over Server: opponent found
+Server --/ Player: GameContext(READY_TO_START)
+Player -> Server: StartGame()
+loop Game Progression
+Server --/ Player: GameContext(WHITE_MOVE)
+Player->Server: MakeMove
+Server --/ Player: GameContext(BLACK_MOVE)
+note over Server: opponent makes a move
+Server --/ Player: GameContext(WHITE_MOVE)
+end
+
+Server --/Player: GameContext(FINISH)
+
+@enduml
