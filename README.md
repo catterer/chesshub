@@ -87,11 +87,11 @@ Every component of the system is fault tolerant:
 
 
 ### Performance
-QPS: For the requested 1000 concurrent games, max expected QPS would be around 1000 (even for bullet chess), so this is not really a concern. But all the components are horizontally scalable in case we have x10, x100, (maybe even x1000?) increase. Just need to make sure MongoDB + StatefulSets can reshard seamlessly.
+QPS: For the requested 1000 concurrent games, max expected QPS would be around 1000 (even for bullet chess we expect at most 1QPS per game), so this is not really a concern. But all the components are horizontally scalable in case we have x10, x100, (maybe even x1000?) increase. Just need to make sure MongoDB + StatefulSets can reshard seamlessly. One of the potential bottlenecks is read amplification for GameList requests (for bots in particular) because it requires querying all shards; this, however, can be optimized: bots can query shard by shard because they only need to get one active game at a time.
 
-CPU: largest CPU consumer would be the bots of course; however, using ReplicaSets with autoscaling for bots should solve it.
+CPU: largest CPU consumer would be the bots; however, using ReplicaSets with autoscaling for bots should solve it.
 
-Storage space: for 1000 concurrent games we have ~1000 QPS (upper bound), each of which consumes maybe 16 additional bytes in the storage -> a most around 1GB per day.
+Storage space: for 1000 concurrent games we have ~1000 QPS (upper bound), each of which consumes ~16-32 additional bytes in the storage -> at most around 2GB per day.
 
 
 
