@@ -23,4 +23,14 @@ All gRPC definitions should be available [here](proto/chesshub.proto).
 ## Player perspective
 
 Here, I describe the progression of one game from a Player's perspective. Note that Player can have any number of games concurrently.
+
 ![pp](https://www.plantuml.com/plantuml/png/bL9TIyCm57tFhyZZ2kj4VHCsrirkAxgsj4KHX12wkotOvjOaS_hlJQnMaUBmzTppSSzDfjfmPGvrHNXfKD6quc-WI6D1KOg6IqDpK2yM8ks8-fDFv8gkkIdt0uz8D43HGjsaLC0jjkCrq60sFx-u9Et8oPrH9yz0DoWr31oNYSsufNjTdF_OkQPOLKjBo-3v0DhyaWnfYHKgrYZOWW9PmlYu5mQyBje_wxATpHobWLSpk0-Y8egNR95aB4dJ90xZeg-KH5gxbOVqo8KHSZSQZNfesDX280tTua5kJeLdON3zm8g4vKMG5LxFbNFtGavYBrqXDXzocYhSAT1Qe3pPRnKL8LidT-6NlJ_vVi8dMDlrJtdCReFvJUlnL-NQscdAQMt7_raBxA5-yFleYoYEyfL7oDIIxOTz1m00)
+
+## Server architecture
+
+K8s manages all server processes. The main components are:
+### ChessEngine ReplicaSet
+Here all the incoming RPCs end up. ChessEngine has the following logic:
+- **Match RPC**: try to find any existing games in the Storage with state=WAITING_FOR_OPPONENT. If found, update (CAS) this game and return GameID to the sender.
+- 
+Incoming requests end up on one of the ChessEngine nodes. Game contexts are stored in MongoDB storage (a StatefulSet of master-slave pairs, sharded by GameID).
