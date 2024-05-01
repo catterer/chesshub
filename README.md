@@ -2,7 +2,7 @@
 
 ## Scope
 
-To limit the scope of this design, I introduce certain limitations:
+To limit the scope of this design, I introduced certain limitations:
 
 1. **Security.** I assume that authorization has already happened, and we can trust all the queries within the system. I also disregard any potential DoS attacks and the like. If required, access control can easily be implemented with a stateless gateway responsible for authorization and rate limits.
 2. **Protocol & RPC.** I chose to use gRPC; it is by no means a hard requirement. I'm just more familiar with it, and schema makes it easier to describe API.
@@ -18,5 +18,6 @@ To limit the scope of this design, I introduce certain limitations:
 
 **Bot** is a special kind of Player that implements some strategy and runs as a dedicated ReplicaSet.
 
-## Player workflow
+## Player perspective
 
+Here, I describe how a game is played from a Player's perspective. Note that Player can have any number of games concurrently.
