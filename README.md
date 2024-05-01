@@ -33,6 +33,8 @@ K8s manages all server processes. The main components are:
 Here all the incoming RPCs end up. ChessEngine has the following logic:
 - **Match RPC**: try to find any existing games in the Storage with state=WAITING_FOR_OPPONENT. If found, compare-and-swap (CAS, using context_version) this game to READY_TO_START and return GameID to the sender.
 - **StartGame RPC** or **CancelGame RPC**: find the game context in Storage and set (CAS) ready_to_start flag of the sender; if both players are ready, promote (CAS) the game to WHITE_MOVE state. For CancelGame, promote to FINISH.
-- **MakeMoveRPC**: find the game context in Storage, apply the new move to the current board state, update (CAS) game context accordingly.
-- ****
+- **MakeMove RPC** or **Surrender RPC**: find the game context in Storage, apply the new move to the current board state. If there is a mate or Surrender RPC, promote to FINISH and set the winner. Update (CAS) game context accordingly. 
+- **PollGame RPC**: use [Change Streams](https://www.mongodb.com/docs/manual/changeStreams/) to listen for any updates in the specified game. When they happen, return a new GameContext to the sender.
+
+
 Incoming requests end up on one of the ChessEngine nodes. Game contexts are stored in MongoDB storage (a StatefulSet of master-slave pairs, sharded by GameID).
