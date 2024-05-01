@@ -1,20 +1,21 @@
 syntax = "proto3";
 
-enum ColorPreference {
-  ANY = 0;
-  RANDOM = 1;
-  WHITE = 2;
-  BLACK = 3;
-}
+service GameService {
+  // Creates a game and starts the matching process on the server.
+  // () -> (WAITING_FOR_OPPONENT/READY_TO_START)
+  rpc Match(MatchRequest) returns (MatchResponse);
 
-message OpponentPreference {
-  enum BotPreference {
-    MUST_BE_BOT = 1;
-    MUST_BE_HUMAN = 2;
-  }
-  BotPreference bot_preference = 1;
-  // Can expand with things like:
-  // repeated string player_id_exclude = 2;
+  // READY_TO_START -> WHITE_MOVE
+  rpc StartGame(StartGameRequest) returns (google.protobuf.Empty);
+  // READY_TO_START -> FINISH
+  rpc CancelGame(CancelGameRequest) returns (google.protobuf.Empty);
+
+  // WHITE_MOVE -> (BLACK_MOVE/FINISH); BLACK_MOVE -> (WHITE_MOVE/FINISH)
+  rpc MakeMove(MakeMoveRequest) returns (google.protobuf.Empty);
+  rpc Surrender(SurrenderRequest) returns (google.protobuf.Empty);
+
+  // All game context updates arrive through here.
+  rpc PollGame(PollGameRequest) returns (stream GameContext);
 }
 
 message MatchRequest {
@@ -29,6 +30,21 @@ message MatchRequest {
 
 message MatchResponse {
   string game_id = 1;
+}
+
+message StartGameRequest {
+  string player_id = 1;
+  string game_id = 2;
+}
+
+message SurrenderGameRequest {
+  string player_id = 1;
+  string game_id = 2;
+}
+
+message CancelGameRequest {
+  string player_id = 1;
+  string game_id = 2;
 }
 
 message PollGameRequest {
@@ -71,18 +87,26 @@ message GameContext {
   BoardState board_state = 6;
 }
 
-service GameService {
-  // Creates a game and starts matching process on the server.
-  // () -> (WAITING_FOR_OPPONENT/READY_TO_START)
-  rpc Match(MatchRequest) returns (MatchResponse);
-
-  // READY_TO_START -> WHITE_MOVE
-  rpc StartGame(StartGameRequest) returns (google.protobuf.Empty);
-
-  // WHITE_MOVE -> (BLACK_MOVE/FINISH); BLACK_MOVE -> (WHITE_MOVE/FINISH)
-  rpc MakeMove(MakeMoveRequest) returns (google.protobuf.Empty);
-
-  // All game context updates arrive through here.
-  rpc PollGame(PollGameRequest) returns (stream GameContext);
+message MakeMoveRequest {
+  string player_id = 1;
+  string game_id = 2;
+  string move = 3; // Bf3 or whatever
 }
 
+
+enum ColorPreference {
+  ANY = 0;
+  RANDOM = 1;
+  WHITE = 2;
+  BLACK = 3;
+}
+
+message OpponentPreference {
+  enum BotPreference {
+    MUST_BE_BOT = 1;
+    MUST_BE_HUMAN = 2;
+  }
+  BotPreference bot_preference = 1;
+  // Can expand with things like:
+  // repeated string player_id_exclude = 2;
+}
