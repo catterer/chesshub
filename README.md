@@ -31,6 +31,6 @@ Here, I describe the progression of one game from a Player's perspective. Note t
 K8s manages all server processes. The main components are:
 ### ChessEngine ReplicaSet
 Here all the incoming RPCs end up. ChessEngine has the following logic:
-- **Match RPC**: try to find any existing games in the Storage with state=WAITING_FOR_OPPONENT. If found, update (CAS) this game and return GameID to the sender.
-- 
+- **Match RPC**: try to find any existing games in the Storage with state=WAITING_FOR_OPPONENT. If found, compare-and-swap (CAS, using context_version) this game to READY_TO_START and return GameID to the sender.
+- **StartGame RPC**: check the game context in Storage; 
 Incoming requests end up on one of the ChessEngine nodes. Game contexts are stored in MongoDB storage (a StatefulSet of master-slave pairs, sharded by GameID).
