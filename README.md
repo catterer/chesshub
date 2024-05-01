@@ -12,7 +12,7 @@ To limit the scope of this design, I introduced certain limitations:
 
 **Player** is an actor uniquely identified by PlayerID (string) who requests games and makes moves. Players can be humans or bots.
 
-**Game** is a full game context uniquely identified by GameID (UUID). It is created once the Player requests a new game (that is, even before the Matching happens). The game context includes the player or players participating in the game, the current state of the game (like PLAYING and FINISHED), and the state of the board.
+**GameContext** is a full game context uniquely identified by GameID (UUID). It is created once the Player requests a new game (that is, even before the Matching happens). The game context includes the player or players participating in the game, the current state of the game (like PLAYING and FINISHED), and the state of the board.
 
 **Matching** means connecting two Players in the same Game.
 
@@ -32,5 +32,7 @@ K8s manages all server processes. The main components are:
 ### ChessEngine ReplicaSet
 Here all the incoming RPCs end up. ChessEngine has the following logic:
 - **Match RPC**: try to find any existing games in the Storage with state=WAITING_FOR_OPPONENT. If found, compare-and-swap (CAS, using context_version) this game to READY_TO_START and return GameID to the sender.
-- **StartGame RPC**: check the game context in Storage; 
+- **StartGame RPC** or **CancelGame RPC**: find the game context in Storage and set (CAS) ready_to_start flag of the sender; if both players are ready, promote (CAS) the game to WHITE_MOVE state. For CancelGame, promote to FINISH.
+- **MakeMoveRPC**: find the game context in Storage, apply the new move to the current board state, update (CAS) game context accordingly.
+- ****
 Incoming requests end up on one of the ChessEngine nodes. Game contexts are stored in MongoDB storage (a StatefulSet of master-slave pairs, sharded by GameID).
