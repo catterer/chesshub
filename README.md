@@ -83,5 +83,9 @@ Every component of the system is fault tolerant:
 - Storage II: ChessEngine pods a *required* to resubscribe to ChangeStreams if ChessEngine -> Storage connection was dropped. This is to guarantee GameContext delivery.
 - Bots: bots are stateless\* and therefore bot replicaset can upscale and downscale without any issues; any bot pod can serve any of the games belonging to the bot.
 
+### Performance and such
+For the requested 1000 concurrent games, max expected QPS would be around 1000 (even for bullet chess), so this is not really a concern. But all the components are horizontally scalable in case we have x10, x100, (maybe even x1000?) increase.
+
+
 \* - not strictly stateless as they maintain the list of bot pods to identify which games belong to which pod.
 
