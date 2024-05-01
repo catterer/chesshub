@@ -79,6 +79,7 @@ message BoardState {
 
 message GameContext {
   // Non-zero context version increments every time GameContext changes.
+  // Used for Compare-and-Swap operations.
   int32 context_version = 1;
   Player player_white = 2;
   Player player_black = 3;
