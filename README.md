@@ -29,12 +29,28 @@ Here, I describe the progression of one game from a Player's perspective. Note t
 ## Server architecture
 
 K8s manages all server processes. The main components are:
+
 ### ChessEngine ReplicaSet
 Here all the incoming RPCs end up. ChessEngine has the following logic:
-- **Match RPC**: try to find any existing games in the Storage with state=WAITING_FOR_OPPONENT. If found, compare-and-swap (CAS, using context_version) this game to READY_TO_START and return GameID to the sender.
+- **Match RPC**: try to find any existing games with state=WAITING_FOR_OPPONENT in *any* Sorage shard (can check shards one by one). If found, compare-and-swap (CAS, using context_version) this game to READY_TO_START and return GameID to the sender. If not found, create a new GameContext in the WAITING_FOR_OPPONENT state.
 - **StartGame RPC** or **CancelGame RPC**: find the game context in Storage and set (CAS) ready_to_start flag of the sender; if both players are ready, promote (CAS) the game to WHITE_MOVE state. For CancelGame, promote to FINISH.
 - **MakeMove RPC** or **Surrender RPC**: find the game context in Storage, apply the new move to the current board state. If there is a mate or Surrender RPC, promote to FINISH and set the winner. Update (CAS) game context accordingly. 
-- **PollGame RPC**: use [Change Streams](https://www.mongodb.com/docs/manual/changeStreams/) to listen for any updates in the specified game. When they happen, return a new GameContext to the sender.
+- **PollGame RPC**: use [Change Streams](https://www.mongodb.com/docs/manual/changeStreams/) to listen for any updates in the specified game. When they happen, return stream the new GameContext to the sender.
+
+#### Monitoring
+Since ChessEngine has all the logic related to the game, it is the best point to monitor the system. A node-level logging agent like Fluentd can be used to aggregate logs from ChessEngine pods and can also be integrated with Prometheus for metrics.
+
+### Storage
+
+MongoDB Storage responsible for
+1. persisting GameContexts
+2. update notification delivery
+3. game Match lookups.
+
+Implemented as a StatefulSet of master-slave pairs, sharded by GameID. The primary index is GameID; secondary index by PlayerID for GameList RPC; more secondary indices (by ColorPreference, etc) can be added for Matching optimization.
+
+This *should* work, but I would try to set it up first before implementing everything else. My main concerns are:
+- seamless horizontal scaling (I know StatefulSets can be tricky to manage).
+- guaranteed GameContext notifications delivery. Need to read more about Change Streams in Mongo to understand how to make it robust.
 
 
-Incoming requests end up on one of the ChessEngine nodes. Game contexts are stored in MongoDB storage (a StatefulSet of master-slave pairs, sharded by GameID).
