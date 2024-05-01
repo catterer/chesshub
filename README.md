@@ -18,5 +18,5 @@ To limit the scope of this design, I introduce certain limitations:
 
 **Bot** is a special kind of Player that implements some strategy and runs as a dedicated ReplicaSet.
 
-## Client lifecycle
+## Player workflow
 
