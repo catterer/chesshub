@@ -87,7 +87,7 @@ Every component of the system is fault tolerant:
 
 
 ### Performance and such
-For the requested 1000 concurrent games, max expected QPS would be around 1000 (even for bullet chess), so this is not really a concern. But all the components are horizontally scalable in case we have x10, x100, (maybe even x1000?) increase.
+For the requested 1000 concurrent games, max expected QPS would be around 1000 (even for bullet chess), so this is not really a concern. But all the components are horizontally scalable in case we have x10, x100, (maybe even x1000?) increase. Just need to make sure MongoDB + StatefulSets can reshard seamlessly.
 
 
 
