@@ -28,8 +28,6 @@ Here, I describe the progression of one game from a Player's perspective. Note t
 
 ## Server architecture (no bots yet)
 
-![nb](chesshub_nobot.png)
-
 K8s manages all server processes. The main components are:
 
 ### ChessEngine ReplicaSet
@@ -56,4 +54,5 @@ This *should* work, but I would try to set it up first before implementing every
 - seamless horizontal scaling (I know StatefulSets can be tricky to manage).
 - guaranteed GameContext notifications delivery. Need to read more about Change Streams in Mongo to understand how to make it robust.
 
+![nb](chesshub_nobot.png)
 
