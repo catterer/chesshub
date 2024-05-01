@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+enum ColorPreference {
+  ANY = 0;
+  RANDOM = 1;
+  WHITE = 2;
+  BLACK = 3;
+}
+
+message OpponentPreference {
+  enum BotPreference {
+    MUST_BE_BOT = 1;
+    MUST_BE_HUMAN = 2;
+  }
+  BotPreference bot_preference = 1;
+  // Can expand with things like:
+  // repeated string player_id_exclude = 2;
+}
+
+message RequestGameRequest {
+  string player_id = 1;
+  ColorPreference color_preference = 2;
+  OpponentPreference opponent_preference = 3;
+  // Can expand with things like:
+  // TimeLimitPreference
+  // StartingPositionPreference
+  // .....
+}
+
+message RequestGameResponse {
+  string game_id = 1;
+}
+
+message PollGameRequest {
+  string game_id = 1;
+  int32 if_modified_since = 2; // context version; set to 0 to get a current state immediately.
+}
+
+enum GameState {
+  WAITING_FOR_OPPONENT = 0;
+  READY_TO_START = 1;
+  WHITE_MOVE = 2;
+  BLACK_MOVE = 3;
+  FINISH = 4;
+}
+
+message Player {
+  string player_id = 1;
+}
+
+message BoardState {
+  enum CellState {
+    NONE = 0;
+    PAWN_WHITE = 1;
+    PAWN_BLACK = 2;
+    //.......
+    KING_BLACK = 12;
+  }
+
+  // Always 64 elements, starting with A1, A2, ....
+  repeated CellState = 1;
+}
+
+message GameContext {
+  // Non-zero context version increments every time GameContext changes.
+  int32 context_version = 1;
+  Player player_white = 2;
+  Player player_black = 3;
+  GameState state = 4;
+  string winner = 5;
+  BoardState board_state = 6;
+}
+
+service GameService {
+  // Creates a game and starts matching process on the server.
+  // () -> (WAITING_FOR_OPPONENT/READY_TO_START)
+  rpc RequestGame(RequestGameRequest) returns (RequestGameResponse);
+
+  // READY_TO_START -> WHITE_MOVE
+  rpc StartGame(StartGameRequest) returns (google.protobuf.Empty);
+
+  // WHITE_MOVE -> (BLACK_MOVE/FINISH); BLACK_MOVE -> (WHITE_MOVE/FINISH)
+  rpc MakeMove(MakeMoveRequest) returns (google.protobuf.Empty);
+
+  // All game context updates arrive through here.
+  rpc PollGame(PollGameRequest) returns (stream GameContext);
+}
+
