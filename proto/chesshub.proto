@@ -94,7 +94,8 @@ message GameContext {
 message MakeMoveRequest {
   string player_id = 1;
   string game_id = 2;
-  string move = 3; // Bf3 or whatever
+  int32 context_version = 3; // to make sure we are moving figure on the current state of the board
+  string move = 4; // Bf3 or whatever
 }
 
 
