@@ -37,7 +37,6 @@ message MatchResponse {
 message StartGameRequest {
   string player_id = 1;
   string game_id = 2;
-  int32 context_version = 3;
 }
 
 message SurrenderGameRequest {
@@ -49,7 +48,6 @@ message SurrenderGameRequest {
 message CancelGameRequest {
   string player_id = 1;
   string game_id = 2;
-  int32 context_version = 3;
 }
 
 message PollGameRequest {
