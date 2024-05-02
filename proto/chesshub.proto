@@ -37,11 +37,13 @@ message MatchResponse {
 message StartGameRequest {
   string player_id = 1;
   string game_id = 2;
+  int32 context_version = 3;
 }
 
 message SurrenderGameRequest {
   string player_id = 1;
   string game_id = 2;
+  int32 context_version = 3;
 }
 
 message CancelGameRequest {
