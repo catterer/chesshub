@@ -6,7 +6,7 @@ To limit the scope of this design, I introduced certain limitations:
 
 1. **Security.** I assume that authorization has already happened, and we can trust all the queries within the system. I also disregard any potential DoS attacks and the like. If required, access control can easily be implemented with a stateless gateway responsible for authorization and rate limits.
 2. **Protocol & RPC.** I chose to use gRPC; it is by no means a hard requirement. I'm just more familiar with it, and schema makes it easier to describe API.
-3. **DB.** The design described below requires the DB to support horizontal scalability, K8s integration, and subscriptions to stored object modifications. MongoDB satisfies those, so I decided to go with it. There are probably more suitable DBs, and for a real application, I would spend more time comparing them (one thing that comes to mind is stored procedure support, which would allow me to integrate the whole chess engine into the DB and get rid of ChessEngine ReplicaSet).
+3. **DB.** The design described below requires the DB to support horizontal scalability, K8s integration, and subscriptions to stored object modifications. MongoDB satisfies those, so I decided to go with it. There are probably more suitable DBs, and for a real application, I would spend more time comparing them (one thing that comes to mind is stored procedure support, which would allow me to integrate the whole chess engine into the DB and get rid of ChessEngine ReplicaSet). Another thing I didn't check is if Mongo has timers which we could use for timed games.
 
 ## Definitions
 
@@ -47,6 +47,7 @@ MongoDB Storage responsible for
 1. persisting GameContexts
 2. update notification delivery
 3. game Match lookups.
+4. for timed matches, Storage also needs to support timers for active games and promote game to FINISHED when timer expires.
 
 Implemented as a StatefulSet of master-slave pairs, sharded by GameID. The primary index is GameID; secondary index by PlayerID for GameList RPC; more secondary indices (by ColorPreference, etc) can be added for Matching optimization.
 
@@ -72,9 +73,9 @@ There is a race during rescaling which leads to one game being temporarily "play
 
 ## Server architecture III (game history)
 
-So far, the whole system doesn't require us to store move history for every game (because we only operate with the latest state). However, move history has its value and should be stored along with the context in the same document. Given the samll size of chess parties (<100 moves, each of which requires a few bytes), this should not impose a large overhead.
+So far, the whole system doesn't require us to store move history for every game (because we only operate with the latest state). However, move history has its value and should be stored along with the context in the same document. Given the small size of chess parties (<100 moves, each of which requires a few bytes), this should not impose a large overhead.
 
-## Server architecture IV (fault tolerance etc)
+## Server architecture IV (fault tolerance)
 
 Every component of the system is fault tolerant:
 - ChessEngine I: stateless nature of ChessEngine pods makes it possible to upscale and restart dead pods on the fly. Active clients always maintain a working connection with ChessEngine instance due to PollGame RPC (+enabled gRPC keepalive). On reconnects, clients should always resent PollGame for all the games they are interested in (list of games can be retrieved with GameList RPC). PollGame context_version field guarantees that no updates are lost between the client and Storage.
